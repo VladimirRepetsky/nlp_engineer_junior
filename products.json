@@ -1,0 +1,27 @@
+[
+    {
+        "name": "Laptop",
+        "price": 1200,
+        "category": "electronics"
+    },
+    {
+        "name": "Headphones",
+        "price": 150,
+        "category": "electronics"
+    },
+    {
+        "name": "Notebook",
+        "price": 5,
+        "category": "stationery"
+    },
+    {
+        "name": "Coffee Mug",
+        "price": 12,
+        "category": "kitchen"
+    },
+    {
+        "name": "Smartphone",
+        "price": 800,
+        "category": "electronics"
+    }
+]
