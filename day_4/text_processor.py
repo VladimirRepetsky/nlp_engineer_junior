@@ -16,6 +16,16 @@ class TextProcessor:
         # Счётчик обработанных текстов.
         self.processed_count = 0
 
+    def _validate_text(self, text: str) -> None:
+        """
+        Вспомогательный метод для проверки типа входных данных.
+
+        Он начинается с нижнего подчёркивания, потому что это
+        внутренний метод класса.
+        """
+        if not isinstance(text, str):
+            raise TypeError("Метод process() должен получать строку")
+
     def process(self, text: str) -> str:
         """
         Базовый метод обработки текста.
@@ -26,7 +36,7 @@ class TextProcessor:
             "Дочерний класс должен реализовать метод process()"
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.name}(processed_count={self.processed_count})"
 
 
@@ -36,11 +46,33 @@ class LowerCaseProcessor(TextProcessor):
     """
 
     def process(self, text: str) -> str:
-        if not isinstance(text, str):
-            raise TypeError("Метод process() должен получать строку")
-
+        self._validate_text(text)
         self.processed_count += 1
         return text.lower()
+
+
+class RemovePunctuationProcessor(TextProcessor):
+    """
+    Необязательное задание.
+
+    Дочерний класс, который удаляет пунктуацию.
+    """
+
+    # Кроме стандартной пунктуации из string.punctuation,
+    # добавим часто встречающиеся русские символы.
+    EXTRA_PUNCTUATION = "«»…—–"
+
+    def process(self, text: str) -> str:
+        self._validate_text(text)
+        self.processed_count += 1
+
+        punctuation = string.punctuation + self.EXTRA_PUNCTUATION
+
+        for punct in punctuation:
+            text = text.replace(punct, " ")
+
+        # Убираем лишние пробелы, которые появились после замены знаков.
+        return " ".join(text.split())
 
 
 class RemoveStopwordsProcessor(TextProcessor):
@@ -84,36 +116,24 @@ class RemoveStopwordsProcessor(TextProcessor):
     }
 
     def __init__(self, stopwords=None):
-        # Вызываем конструктор родительского класса.
+        # Обязательно вызываем конструктор родительского класса.
         super().__init__()
 
         if stopwords is None:
-            self.stopwords = self.DEFAULT_STOPWORDS
+            self.stopwords = set(self.DEFAULT_STOPWORDS)
         else:
             self.stopwords = set(stopwords)
 
     def process(self, text: str) -> str:
-        if not isinstance(text, str):
-            raise TypeError("Метод process() должен получать строку")
-
+        self._validate_text(text)
         self.processed_count += 1
 
-        # Переводим текст в нижний регистр.
-        text = text.lower()
-
-        # Удаляем пунктуацию.
-        for punct in string.punctuation:
-            text = text.replace(punct, " ")
-
-        # Разбиваем текст на слова.
         words = text.split()
 
-        # Убираем стоп-слова.
         filtered_words = [
             word for word in words if word not in self.stopwords
         ]
 
-        # Соединяем слова обратно в строку.
         return " ".join(filtered_words)
 
 
@@ -121,7 +141,7 @@ class TextPipeline:
     """
     Класс, который последовательно применяет несколько обработчиков текста.
 
-    Это уже мини-модель будущего NLP-пайплайна.
+    Это мини-модель будущего NLP-пайплайна.
     """
 
     def __init__(self, processors):
@@ -140,9 +160,14 @@ if __name__ == "__main__":
         "Нормально, за свою цену ок.",
     ]
 
+    # Пайплайн с необязательным заданием:
+    # 1. Переводим текст в нижний регистр.
+    # 2. Удаляем пунктуацию.
+    # 3. Удаляем стоп-слова.
     pipeline = TextPipeline(
         processors=[
             LowerCaseProcessor(),
+            RemovePunctuationProcessor(),
             RemoveStopwordsProcessor(),
         ]
     )
